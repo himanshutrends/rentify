@@ -6,8 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function Onboarding() {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '', firstName: '', lastName: '', phone: '' });
-  const [isSeller, setIsSeller] = useState(false); // State for seller registration
+  const [form, setForm] = useState({ email: '', password: '', firstName: '', lastName: '', phone: '', isSeller: false });
   const router = useRouter();
 
   const handleChange = (e) => {
@@ -19,12 +18,11 @@ export default function Onboarding() {
     e.preventDefault();
     try {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-      const response = await axios.post(endpoint, isLogin ? form : { ...form, isSeller }); // Pass isSeller only for registration
+      const response = await axios.post(endpoint, form);
       const token = response.data.token;
       if (token) {
         localStorage.setItem('token', token);
-        const redirectPath = isLogin ? (isSeller ? '/seller' : '/listings') : '/'; // Redirect based on login status and user type
-        router.push(redirectPath);
+        router.push('/seller'); // Redirect to a dashboard or home page after login
       }
     } catch (error) {
       console.error('Error:', error.response ? error.response.data.message : error.message);
@@ -69,8 +67,8 @@ export default function Onboarding() {
                 <label className="block text-sm font-medium text-gray-700">I am a</label>
                 <select
                   name="isSeller"
-                  value={isSeller}
-                  onChange={(e) => setIsSeller(e.target.value === 'true')} // Convert string to boolean
+                  value={form.isSeller}
+                  onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 >
                   <option value={false}>Buyer</option>
